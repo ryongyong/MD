@@ -3,22 +3,21 @@ using namespace std ;
 int main(void)
 {
   long long T ;//総ステップ数
-    T = 60000;
-  long long K ;//総ステップ数
-  K = T ; 
+  T = 60;
   int NUM = 4 ;  //粒子数 
   int B ; //平衡化時間
-  B = 10000 ;
+  B = 10 ;
   double DT = 0.005 ;
   vector<vector<int > > D(3 , vector<int>(NUM)) ; //初期座標からのズレ比率
   double DELTA = 0.071 ;
   double CE12 ,CE06 ,CF12 ,CF06 ;
-  vector<int> mass(NUM) ;
-  for(int i = 0 ; i< NUM ; i++) mass.at(i) = 1 ;
-  vector<vector<double > > force1(3 , vector<double >(NUM)),force2(3 , vector<double >(NUM)), engp(3 , vector<double >(NUM));
+  vector<int> MASS(NUM) ;
+  for(int i = 0 ; i< NUM ; i++) MASS.at(i) = 1 ;
+  vector<vector<double > > force1(3 , vector<double >(NUM)),force2(3 , vector<double >(NUM)), engp(NUM , vector<double >(NUM));
   int EPS = 1 , SIGMA = 1 ;
   double x , y , z , r2 , r2i , r06i , r12i , fc , fx , fy , fz , ep ;
-  double ke1 ; 
+  double ke1 ;
+  
   CE12 = 4.0*EPS*pow(SIGMA,12.0);
   CE06 = 4.0*EPS*pow(SIGMA,6.0) ;
   CF12 = CE12*12.0;
@@ -50,21 +49,122 @@ j = 0 ;
 
 
 
-////////////////////初期座標の設定////////////////
+  ////////////////////初期座標の設定////////////////
 
 
 
   vector<vector<double > > pos(3 , vector<double>(NUM)) ;
-  for(int i =  0 ; i< 3 ; i++){
+  for(int i =  0 ; i < 3 ; i++){
     for(int j = 0 ; j < NUM ; j++){
-      pos.at(i).at(j) = 1 ; 
+      pos.at(i).at(j) = 2*i + 2*j  ; 
     }
   }
-///////////////////// 初期速度//////////////////////
+  //////////////////////// 初期速度//////////////////////
 
-double v[3][3] = {0.0};
+  vector<vector<double> > v(3 , vector<double>(NUM)) ;   
 
 
 
-return (0);
+  //////////////////  verlet algorithm/////
+
+  for( long long k = 1 ; k <= T ; k++){
+
+    for(int i = 0 ; i < NUM ; i++){
+      for(int j = i+1 ; j < NUM ; j++){
+	x = pos.at(0).at(i) - pos.at(0).at(j);
+	y = pos.at(1).at(i) - pos.at(1).at(j);
+	z = pos.at(2).at(i) - pos.at(2).at(j);
+
+
+	r2 = x*x + y*y + z*z ;
+	r2i = 1.0/r2 ;
+	r06i = r2i*r2i*r2i ;
+	r12i = r06i * r06i ;
+	fc = (CF12 * r12i - CF06 * r06i)*r2i ;
+	fx = fc*x ;
+	fy = fc*y ;
+	fz = fc*z ;
+
+	force1.at(0).at(i) = force1.at(0).at(i) + fx ; 
+	force1.at(1).at(i) = force1.at(1).at(i) + fx ;
+	force1.at(2).at(i) = force1.at(2).at(i) + fx ;
+
+	force1.at(0).at(j) = force1.at(0).at(j) - fx ;
+	force1.at(1).at(j) = force1.at(1).at(j) - fx ;
+	force1.at(2).at(j) = force1.at(2).at(j) - fx ;
+      }
+
+    }
+
+    for(int i = 0 ; i < NUM ; i++){
+      pos.at(0).at(i) = pos.at(0).at(i) + (0.5*DT*DT/MASS.at(i)*force1.at(0).at(i));
+      pos.at(1).at(i) = pos.at(1).at(i) + (0.5*DT*DT/MASS.at(i)*force1.at(1).at(i));
+      pos.at(2).at(i) = pos.at(2).at(i) + (0.5*DT*DT/MASS.at(i)*force1.at(2).at(i));        
+
+    }
+
+
+    for(int i = 0 ; i < NUM ; i++){
+      for(int j = i+1 ; j < NUM ; j++){
+	x = pos.at(0).at(i) - pos.at(0).at(j);
+	y = pos.at(1).at(i) - pos.at(1).at(j);
+	z = pos.at(2).at(i) - pos.at(2).at(j);
+
+
+	r2 = x*x + y*y + z*z ;
+	r2i = 1.0/r2 ;
+	r06i = r2i*r2i*r2i ;
+	r12i = r06i * r06i ;
+	fc = (CF12 * r12i - CF06 * r06i)*r2i ;
+	fx = fc*x ;
+	fy = fc*y ;
+	fz = fc*z ;
+
+	ep = CE12*r12i - CE06*r06i ;
+	engp.at(i).at(j) = ep ; 
+
+	force2.at(0).at(i) = force2.at(0).at(i) + fx ; 
+	force2.at(1).at(i) = force2.at(1).at(i) + fx ;
+	force2.at(2).at(i) = force2.at(2).at(i) + fx ;
+
+	force2.at(0).at(j) = force2.at(0).at(j) - fx ;
+	force2.at(1).at(j) = force2.at(1).at(j) - fx ;
+	force2.at(2).at(j) = force2.at(2).at(j) - fx ;
+      }
+
+    }
+
+
+    for(int i = 0 ; i < NUM ; i++){
+      v.at(0).at(i) = v.at(0).at(i) + ( (DT/MASS.at(i))*(force1.at(0).at(i) + force2.at(0).at(i) ) ) /2.0 ; 
+      v.at(1).at(i) = v.at(1).at(i) + ( (DT/MASS.at(i))*(force1.at(1).at(i) + force2.at(1).at(i) ) ) /2.0 ;
+      v.at(2).at(i) = v.at(2).at(i) + ( (DT/MASS.at(i))*(force1.at(2).at(i) + force2.at(2).at(i) ) ) /2.0 ;       
+    }
+
+
+
+
+    cout << v.at(0).at(1) << endl; 
+
+
+    for(int i = 0 ; i < 3 ; i++){
+      for(int j = 0 ; j < NUM ; j++){
+	force1.at(i).at(j) = 0 ;
+	force2.at(i).at(j) = 0 ;
+	
+      }
+    }
+
+    for(int i = 0 ; i < NUM ; i++){
+      for(int j = 0 ; j < NUM ; j++){
+	engp.at(i).at(j) = 0 ; 
+      }
+    }
+    x = 0 ;
+    y = 0 ;
+    z = 0 ;
+    ep = 0 ; 
   }
+  
+  return (0);
+}
