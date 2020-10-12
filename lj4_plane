@@ -4,15 +4,15 @@ using namespace std ;
 int main(void)
 {
     double DELTA = 0.03 ;
-    while(DELTA < 0.14){
+    while(DELTA < 0.101){
         
-        DELTA += 0.0005 ;
+        DELTA += 0.0001 ;
         long long TIME ;//総ステップ数
-        TIME = 600000;
+        TIME = 5000000;
         int NUM = 4 ;  //粒子数
         long long B ; //平衡化時間
         B = 50000 ;
-        double DT = 0.005 ; //データを取るときは0.005でやること
+        double DT = 0.002 ; //データを取るときは0.005でやること
         vector<long double> E(TIME) ;//エネルギーのを格納する配列
         vector<vector<long double > > D(3 , vector<long double>(NUM)) ; //初期座標からのズレ比率
         double EPS = 1.0 , SIGMA = 1.0 ;
@@ -28,6 +28,7 @@ int main(void)
         long double x , y , z , r2 , r2i , r06i , r12i , fc , fx , fy , fz , ep ;
         vector<long double> ke(TIME) ;
         vector<long double> U(TIME) ;
+        vector<long double> Linde(TIME) ; 
       
         double T_mean = 0 , E_mean = 0 , ke_mean = 0  ;
 
