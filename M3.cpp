@@ -1,6 +1,15 @@
 #include<bits/stdc++.h>
 using namespace std ; 
 
+void set_parameter(long long &TIME ,int  &NUM ,long double &DT ,long double &DELTA ,long double &EPS ,long double &SIGMA ,long double &RHO){
+    TIME = 10000000 ;
+    NUM = 3 ; 
+    DT = 0.002 ;
+    DELTA = 0.015 ;    
+    EPS = 1.0 ;
+    SIGMA = 1.0 ; 
+    RHO = 6.0 ; 
+} 
 
 long double calc_kinetic_energy(vector<vector< long double > > v , vector<long double > MASS , int NUM){
     long double x = 0 ; 
@@ -46,6 +55,34 @@ void initial_velocity(vector<vector<long double> > &v  , int NUM){
     for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++) v.at(i).at(j) = 0.0 ; 
 }
 
+void initial_pos(vector<vector<long double> > &pos ,vector<vector<long double> > D, int NUM , long double SIGMA , long double DELTA ){
+
+    D[0][0] = -1.0 ;
+    D[0][1] =  1.0 ;
+    D[0][2] =  0.0;
+    D[1][0] = -1.0 ;
+    D[1][1] = -1.0 ;
+    D[1][2] =  1.0 ;
+    D[2][0] =  0.0 ;
+    D[2][1] =  0.0 ;
+    D[2][2] =  0.0 ;
+
+    pos.at(0).at(0) = 0.0 ;//原子１
+    pos.at(1).at(0) = 0.0 ;
+    pos.at(2).at(0) = 0.0 ;
+    
+    pos.at(0).at(1) = pow(2.0 , (1.0)/(6.0))*SIGMA  ;//原子2
+    pos.at(1).at(1) = 0.0 ;
+    pos.at(2).at(1) = 0.0 ;
+    
+    pos.at(0).at(2) = pow(2.0,(1.0/6.0))*SIGMA/2.0  ;//原子3
+    pos.at(1).at(2) = pow(2.0,(1.0/6.0))*SIGMA*sin(M_PI/3.0) ;
+    pos.at(2).at(2) = 0.0 ;
+
+    for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++) pos.at(i).at(j) += D.at(i).at(j)*DELTA ; 
+    
+}
+
 void calc_force(vector<vector<long double> > &force1, vector<vector<long double > > pos, long double RHO , int NUM, bool ok  , vector<vector< long double > > &engp){
 
     for(int i = 0 ; i < NUM ; i++){
@@ -62,6 +99,7 @@ void calc_force(vector<vector<long double> > &force1, vector<vector<long double 
             force1.at(1).at(i) += fc * (y/rxy) ;
             force1.at(0).at(j) -= fc * (x/rxy) ;
             force1.at(1).at(j) -= fc * (y/rxy) ;
+
             if(ok){
                 double ep = exp(-2*RHO*(r-1.0)) - 2.0*exp(-RHO*(r-1.0)); 
                 engp.at(i).at(j) = ep ;
@@ -72,14 +110,19 @@ void calc_force(vector<vector<long double> > &force1, vector<vector<long double 
 
 int main(void){
     
-    long long TIME = 20000 ;
-    int  NUM = 3 ; 
-    long long B = 500000 ; 
-    long double DT = 0.002 ;
-    long double DELTA = 0.273 ;     
+    long long TIME ;
+    int  NUM ; 
+    long double DT ;
+    long double DELTA ;    
+    long double EPS ;
+    long double SIGMA ; 
+    long double RHO ; 
+
+    set_parameter(TIME , NUM , DT , DELTA , EPS , SIGMA , RHO) ; 
+
     vector<vector<long double > > D(3 , vector<long double>(NUM)) ;  
-    long double EPS = 1.0 , SIGMA = 1.0 , RHO = 3.0 ; 
-    vector<vector<long double > > force1(3 , vector<long double>(NUM)), force2(3 , vector<long double>(NUM)) ; 
+    vector<vector<long double > > force1(3 , vector<long double>(NUM)) ; 
+    vector<vector<long double > > force2(3 , vector<long double>(NUM)) ; 
     vector<vector<long double > > engp(NUM , vector<long double>(NUM)) ; 
     vector<vector<long double > > v(3 , vector<long double> (NUM)) ;  
     vector<vector<long double > > pos(3 , vector<long double>(NUM)) ;   
@@ -87,46 +130,21 @@ int main(void){
     //long double r01_vec[3] , r02_vec[3] ,C ;
     long double T_mean = 0 , E_mean = 0 , ke_mean = 0 ;
 
+
     for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++){
         force1.at(i).at(j) = 0.0 ;
         force2.at(i).at(j) = 0.0 ;
         engp.at(i).at(j) = 0.0 ; 
     } 
+
     vector<long double> MASS(NUM) ; 
     for(int i = 0 ; i < NUM ; i++) MASS.at(i) = 1.0 ;     
 
 
-/////////////////////////////////////////////initial position//////////////////////////////////////////////////
-
-
-    D[0][0] =  0.484507151549531 ;
-    D[0][1] = -0.728112699618685 ;
-    D[0][2] =  0.339269852827254 ;
-    D[1][0] =  0.649266472076588 ;
-    D[1][1] = -0.608513580689966 ;
-    D[1][2] = -0.880300767367624 ;
-    D[2][0] =  0.0 ;
-    D[2][1] =  0.0 ;
-    D[2][2] =  0.0 ;
-
-    pos.at(0).at(0) = 0.0 ;//原子１
-    pos.at(1).at(0) = 0.0 ;
-    pos.at(2).at(0) = 0.0 ;
-    
-    pos.at(0).at(1) = pow(2.0 , (1.0)/(6.0))*SIGMA  ;
-    pos.at(1).at(1) = 0.0 ;
-    pos.at(2).at(1) = 0.0 ;
-    
-    pos.at(0).at(2) = pow(2.0,(1.0/6.0))*SIGMA/2.0  ;
-    pos.at(1).at(2) = pow(2.0,(1.0/6.0))*SIGMA*sin(M_PI/3.0) ;
-    pos.at(2).at(2) = 0.0 ;
-
-    for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++) pos.at(i).at(j) += D.at(i).at(j)*DELTA ; 
-
-
+    initial_pos(pos , D , NUM , SIGMA , DELTA) ; 
     initial_velocity(v , NUM) ;     
         
-/////////////////////////////////////  verlet algorithm  /////////////////////////////////////////////
+///////////////////////////////////// start verlet algorithm  /////////////////////////////////////////////
         
     for(long long  k = 0 ; k < TIME ; k++){
         bool ok = false ; 
@@ -147,8 +165,10 @@ int main(void){
                 force2.at(i).at(j) = 0.0 ;
             }
         }
+
     }
-//////////////////////////////////verlet algorithm end//////////////////////////////////////////////
+
+//////////////////////////////////end verlet algorithm //////////////////////////////////////////////
     
     E_mean = mean_time(E) ; 
     ke_mean = mean_time(ke) ; 
