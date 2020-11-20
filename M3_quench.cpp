@@ -2,16 +2,27 @@
 using namespace std ; 
 
 
-
 void set_parameter(long long &TIME ,int  &NUM ,long double &DT ,long double &DELTA ,long double &EPS ,long double &SIGMA ,long double &RHO){
-    TIME = 50 ;
+    TIME = 20000000 ;
     NUM = 3 ; 
-    DT = 0.002 ;
+    DT = 0.005 ;
     DELTA = 0.0 ;    
     EPS = 1.0 ;
     SIGMA = 1.0 ; 
-    RHO = 6.0 ; 
+    RHO = 3.0 ; 
 } 
+
+long double calc_pes_dist(vector<pair<long double , long double> > dist_x,vector<pair<long double , long double> > dist_y, vector<vector<long double > > pos){
+    long double dist_x_dist = 0 ;
+    long double dist = 0 ; 
+
+    for(int i = 0 ; i < 3 ; i++){
+        dist_x_dist += ( dist_x.at(i).first - pos.at(0).at(i) )*( dist_x.at(i).first - pos.at(0).at(i) ) ; 
+        dist_x_dist += ( dist_y.at(i).second - pos.at(1).at(i) )*( dist_y.at(i).second - pos.at(1).at(i) ); 
+    }
+    dist = sqrt(dist_x_dist) ; 
+    return dist ; 
+}
 
 long double calc_rad(vector<long double>r01_vec  ,vector<long double> r02_vec  ){
     long double X = 0 ; 
@@ -93,7 +104,7 @@ void initial_pos(vector<vector<long double> > &pos ,vector<vector<long double> >
     pos.at(2).at(0) = 0.0 ;
     
     pos.at(0).at(1) = 1.0 ;//原子2
-    pos.at(1).at(1) = 0.001 ;
+    pos.at(1).at(1) = 0.00001 ;
     pos.at(2).at(1) = 0.0 ;
     
     pos.at(0).at(2) = 2.0 ; 
@@ -151,6 +162,8 @@ int main(void){
     vector<long double> r01_vec(3) , r02_vec(3) ;
     long double T_mean = 0 , E_mean = 0 , ke_mean = 0 ;
     vector<long double> theta(TIME) ;  
+    vector<pair<long double , long double> > dist_x(3) , dist_y(3) ; 
+    long double dist_pes = 0 ; 
 
     for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++){
         force1.at(i).at(j) = 0.0 ;
@@ -170,12 +183,19 @@ int main(void){
     for(long long  k = 0 ; k < TIME ; k++){
         bool ok = false ; 
 
+        for(int i = 0 ; i < 3 ; i++){
+            dist_x.at(i).first = pos.at(0).at(i) ; //x
+            dist_y.at(i).second = pos.at(1).at(i) ; //y
+        }
+
+
+
         calc_force(force1 , pos , RHO , NUM ,ok , engp) ; //calc force1 
         ok = true ; 
         calc_pos(pos , v , force1 , MASS , DT  , NUM ) ; //calc position
         calc_force(force2 , pos , RHO , NUM , ok  , engp) ; //calc force2 
         calc_velocity(v ,force1 , force2 , MASS , DT ,NUM) ;  //calc velocity 
-
+        dist_pes += calc_pes_dist(dist_x , dist_y , pos) ; 
 
         ke.at(k) = calc_kinetic_energy(v , MASS ,NUM) ; 
         U.at(k) = calc_potential_energy(engp , NUM) ; 
@@ -187,7 +207,7 @@ int main(void){
             r02_vec.at(i) = pos.at(i).at(2) - pos.at(i).at(0)   ;
         }        
         theta.at(k) = calc_rad(r01_vec , r02_vec ) ;  
-        cout << fixed << setprecision(6) << theta.at(k) << "," <<  U.at(k) << endl;            
+        if(k % 1000 == 0 && k > 30000) cout << fixed << setprecision(20) << dist_pes << "," <<  U.at(k) << endl;            
 
         for(int i = 0 ; i < 3 ; i++){
             for(int j = 0 ; j < NUM ; j++){
