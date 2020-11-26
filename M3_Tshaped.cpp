@@ -7,10 +7,10 @@ using namespace std ;
 ///////
 
 void set_parameter(long long &TIME ,int  &NUM ,long double &DT ,long double &DELTA ,long double &EPS ,long double &SIGMA ,long double &RHO){
-    TIME = 500000 ;
+    TIME = 100000 ;
     NUM = 3 ; 
     DT = 0.002 ;
-    DELTA = 0.35 ;    
+    DELTA = 0.45 ;    
     EPS = 1.0 ;
     SIGMA = 1.0 ; 
     RHO = 3.0 ; 
@@ -45,14 +45,14 @@ long double mean_time(vector<long double> X ){
 }
 
 void calc_pos(vector<vector<long double > > &pos , vector<vector<long double> > v ,vector<vector<long double> > force1 , vector<long double> MASS , long double DT , int NUM ){
-    for(int i = 0 ; i < NUM ; i++)for(int j = 0 ; j < 3 ; j++){
-      pos.at(j).at(i) = pos.at(j).at(i) + DT*v.at(j).at(i) + (0.5*DT*DT/MASS.at(i)*force1.at(j).at(i));
+    for(int i = 0 ; i < 3; i++)for(int j = 0 ; j < NUM ; j++){
+      pos.at(i).at(j) = pos.at(i).at(j) + DT*v.at(i).at(j) + (0.5*DT*DT/MASS.at(i)*force1.at(i).at(j));
     }
 }
 
 void calc_velocity(vector<vector<long double> > &v,vector<vector<long double> >force1 ,vector<vector<long double> > force2 ,vector<long double> MASS , long double DT , int NUM){
-    for(int i = 0 ; i < NUM ; i++)for(int j = 0 ; j < 3 ; j++){
-        v.at(j).at(i) = v.at(j).at(i) + ( (DT/MASS.at(i) )*(force1.at(j).at(i) + force2.at(j).at(i) ) ) /2.0 ;
+    for(int i = 0 ; i < 3 ; i++)for(int j = 0 ; j < NUM ; j++){
+        v.at(i).at(j) = v.at(i).at(j) + ( (DT/MASS.at(i) )*(force1.at(i).at(j) + force2.at(i).at(j) ) ) /2.0 ;
     }
 }
 
@@ -198,7 +198,7 @@ int main(void){
 /*
     for(int i = 0 ; i < 3 ; i++){
         for(int j = 0 ; j < NUM ; j++){
-            cout << pos.at(i).at(j) << "," ;
+            cout << v.at(i).at(j) << "," ;
         }
         cout << endl;  
     }
