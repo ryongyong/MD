@@ -7,13 +7,13 @@ using namespace std ;
 ///////
 
 void set_parameter(long long &TIME ,int  &NUM ,long double &DT ,long double &DELTA ,long double &EPS ,long double &SIGMA ,long double &RHO){
-    TIME = 100000 ;
+    TIME = 200000 ;
     NUM = 3 ; 
     DT = 0.002 ;
-    DELTA = 0.45 ;    
+    DELTA = 0.1 ;    
     EPS = 1.0 ;
     SIGMA = 1.0 ; 
-    RHO = 3.0 ; 
+    RHO = 6.0 ; 
 } 
 
 long double calc_kinetic_energy(vector<vector< long double > > v , vector<long double > MASS , int NUM){
@@ -106,9 +106,9 @@ void calc_Tshaped_force(vector<vector<long double> > &force1, vector<vector<long
 
             double ep = exp(-2*RHO*(r-1.0)) - 2.0*exp(-RHO*(r-1.0)); 
             if(j == 2){
-                engp.at(0).at(j) = ep*2 ; 
+                engp.at(0).at(j) = ep ; 
             }
-            else engp.at(0).at(j) = ep ;
+            else engp.at(0).at(j) = ep*2 ;
         }
     }
 
@@ -168,10 +168,11 @@ int main(void){
         ke.at(k) = calc_kinetic_energy(v , MASS ,NUM) ; 
         U.at(k) = calc_potential_energy(engp , NUM) ; 
         E.at(k) = U.at(k) + ke.at(k) ; // E = Total energy 
+        //cout << fixed << setprecision(10) << k << "," << ke.at(k) << "," << E.at(k) << endl;
 /*
         for(int i = 0 ; i < 3 ; i++){
             for(int j = 0 ; j < NUM ; j++){
-                cout << force1.at(i).at(j) << "," ;
+                cout << v.at(i).at(j) << "," ;
             }
         cout << endl;  
         }
